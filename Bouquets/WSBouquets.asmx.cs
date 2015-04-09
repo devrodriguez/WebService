@@ -121,5 +121,16 @@ namespace Natuflora.WebService.Bouquets
             dbQuery.Cerrar();
             return new JavaScriptSerializer().Serialize(query);
         }
+
+        [WebMethod(EnableSession = true)]
+        [ScriptMethod(ResponseFormat = ResponseFormat.Json)]
+        public String ReadDetailFormulaOP3(Int32 id_detalle_version_bouquet)
+        {
+            BDBouquets dbQuery = new BDBouquets();
+            DataSet ds = dbQuery.ConsultarDetalleFormula_3(id_detalle_version_bouquet);
+            var query = new BLL_Bouquets().BuildDetailFormulaOP3(ds.Tables[0]);
+            dbQuery.Cerrar();
+            return new JavaScriptSerializer().Serialize(query);
+        }
     }
 }
