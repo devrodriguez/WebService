@@ -27,36 +27,36 @@ namespace Natuflora.WebService.Bouquets
         [ScriptMethod(ResponseFormat = ResponseFormat.Json)]
         public String ConsultarDetallePO(Int32 idDetallePO)
         {
-            HttpContext.Current.Session["SessionPO"] = "216";
+            HttpContext.Current.Session["SessionPO"] = "2425";
             HttpContext.Current.Session["id_usuario"] = "44";
 
             BDBouquets dbQuery = new BDBouquets();
             DataSet ds = dbQuery.DetallePO(Int32.Parse(HttpContext.Current.Session["SessionPO"].ToString()), Int32.Parse(HttpContext.Current.Session["id_usuario"].ToString()));
-            var query = new BLL_Bouquets().ConstruirDetallePO(ds.Tables[0]).Where(bouquet => bouquet.id_detalle_po == idDetallePO);
+            var query = new BLL_Bouquets().BuildRecipePO(ds.Tables[0]).Where(bouquet => bouquet.id_detalle_po == idDetallePO);
             dbQuery.Cerrar();
             return new JavaScriptSerializer().Serialize(query);
         }
 
         [WebMethod(EnableSession = true)]
         [ScriptMethod(ResponseFormat = ResponseFormat.Json)]
-        public String ConsultarRecetas(Int32 id_version_bouquet)
+        public String ReadBouquets(Int32 id_version_bouquet)
         {
             BDBouquets dbQuery = new BDBouquets();
             DataSet ds = dbQuery.ConsultarRecetas(id_version_bouquet);
-            var query = new BLL_Bouquets().ConstruirRecetas(ds.Tables[0]);
+            var query = new BLL_Bouquets().BuildBouquet(ds.Tables[0]);
             dbQuery.Cerrar();
             return new JavaScriptSerializer().Serialize(query);
         }
 
         [WebMethod(EnableSession = true)]
         [ScriptMethod(ResponseFormat = ResponseFormat.Json)]
-        public String ReadDetailRecipe(Int32 id_version_bouquet, Int32 id_formula_bouquet)
+        public String ReadDetailBouquet(Int32 id_version_bouquet, Int32 id_formula_bouquet)
         {
             BDBouquets dbQuery = new BDBouquets();
             DataSet ds = dbQuery.ConsultarRecetas(id_version_bouquet);
             DataTable dt = ds.Tables[1].Clone();
             ds.Tables[1].Select(String.Format("id_formula_bouquet = {0}", id_formula_bouquet)).Take(1).CopyToDataTable(dt, LoadOption.Upsert);
-            var query = new BLL_Bouquets().BuildDetailRecipe(dt);
+            var query = new BLL_Bouquets().BuildDetailBouquet(dt);
             dbQuery.Cerrar();
             return new JavaScriptSerializer().Serialize(query);
         }
@@ -179,6 +179,20 @@ namespace Natuflora.WebService.Bouquets
             BDBouquets dbQuery = new BDBouquets();
             DataSet ds = dbQuery.EliminarReceta(id_detalle_version_bouquet);
             var query = new BLL_Bouquets().BuildGenericResponse("_removed");
+            dbQuery.Cerrar();
+            return new JavaScriptSerializer().Serialize(query);
+        }
+
+        [WebMethod(EnableSession = true)]
+        [ScriptMethod(ResponseFormat = ResponseFormat.Json)]
+        public String ReadBouquetRecipe(Int32 id_detalle_version_bouquet)
+        {
+            BDBouquets dbQuery = new BDBouquets();
+            DataSet ds = dbQuery.ConsultarFormula(id_detalle_version_bouquet);
+            DataTable dt = ds.Tables[1];
+            DataRow dr = dt.NewRow();
+            dt.Rows.Add(dr);
+            var query = new BLL_Bouquets().BuildBouquetRecipe(dt);
             dbQuery.Cerrar();
             return new JavaScriptSerializer().Serialize(query);
         }
