@@ -102,12 +102,25 @@ namespace Natuflora.WebService.Bouquets
 
         [WebMethod(EnableSession = true)]
         [ScriptMethod(ResponseFormat = ResponseFormat.Json)]
-        public String ReadFlowerType()
+        public String ReadFormatoUPC(String nombre_formato)
+        {
+            BDBouquets dbQuery = new BDBouquets();
+            DataSet ds = dbQuery.ConsultarFormatoUpc();
+            DataTable dt = ds.Tables[0].Clone();
+            ds.Tables[0].Select(String.Format("nombre_formato LIKE '%{0}%'", nombre_formato)).Take(100).CopyToDataTable(dt, LoadOption.Upsert);
+            var query = new BLL_Bouquets().BuildFormatoUPC(dt);
+            dbQuery.Cerrar();
+            return new JavaScriptSerializer().Serialize(query);
+        }
+
+        [WebMethod(EnableSession = true)]
+        [ScriptMethod(ResponseFormat = ResponseFormat.Json)]
+        public String ReadFlowerType(String nombre_tipo_flor)
         {
             BDBouquets dbQuery = new BDBouquets();
             DataSet ds = dbQuery.BouquetConsulatarFlor("consultar_tipo_flor", 0);
             DataTable dt = ds.Tables[0].Clone();
-            ds.Tables[0].Select("disponible_comercializadora = True").CopyToDataTable(dt, LoadOption.Upsert);
+            ds.Tables[0].Select(String.Format("disponible_comercializadora = True AND nombre_tipo_flor LIKE '%{0}%'", nombre_tipo_flor)).Take(100).CopyToDataTable(dt, LoadOption.Upsert);
             var query = new BLL_Bouquets().BuildFlowerType(dt);
             dbQuery.Cerrar();
             return new JavaScriptSerializer().Serialize(query);
@@ -115,12 +128,12 @@ namespace Natuflora.WebService.Bouquets
 
         [WebMethod(EnableSession = true)]
         [ScriptMethod(ResponseFormat = ResponseFormat.Json)]
-        public String ReadFlowerVariety(Int32 id_tipo_flor_cultivo)
+        public String ReadFlowerVariety(Int32 id_tipo_flor_cultivo, String nombre_variedad_flor)
         {
             BDBouquets dbQuery = new BDBouquets();
             DataSet ds = dbQuery.BouquetConsulatarFlor("consultar_variedad_flor", id_tipo_flor_cultivo);
             DataTable dt = ds.Tables[0].Clone();
-            ds.Tables[0].Select("disponible_comercializadora = True").CopyToDataTable(dt, LoadOption.Upsert);
+            ds.Tables[0].Select(String.Format("disponible_comercializadora = True AND nombre_variedad_flor LIKE '%{0}%'", nombre_variedad_flor)).Take(100).CopyToDataTable(dt, LoadOption.Upsert);
             var query = new BLL_Bouquets().BuildFlowerVariety(dt);
             dbQuery.Cerrar();
             return new JavaScriptSerializer().Serialize(query);
@@ -128,12 +141,12 @@ namespace Natuflora.WebService.Bouquets
 
         [WebMethod(EnableSession = true)]
         [ScriptMethod(ResponseFormat = ResponseFormat.Json)]
-        public String ReadFlowerGrade(Int32 id_tipo_flor_cultivo)
+        public String ReadFlowerGrade(Int32 id_tipo_flor_cultivo, String nombre_grado_flor)
         {
             BDBouquets dbQuery = new BDBouquets();
             DataSet ds = dbQuery.BouquetConsulatarFlor("consultar_grado_flor", id_tipo_flor_cultivo);
             DataTable dt = ds.Tables[0].Clone();
-            ds.Tables[0].Select("disponible_comercializadora = True").CopyToDataTable(dt, LoadOption.Upsert);
+            ds.Tables[0].Select(String.Format("disponible_comercializadora = True AND nombre_grado_flor LIKE '%{0}%'", nombre_grado_flor)).CopyToDataTable(dt, LoadOption.Upsert);
             var query = new BLL_Bouquets().BuildFlowerGrade(dt);
             dbQuery.Cerrar();
             return new JavaScriptSerializer().Serialize(query);
