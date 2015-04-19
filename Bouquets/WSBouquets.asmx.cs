@@ -63,6 +63,25 @@ namespace Natuflora.WebService.Bouquets
 
         [WebMethod(EnableSession = true)]
         [ScriptMethod(ResponseFormat = ResponseFormat.Json)]
+        public String ReadDetailBouquetSelected(Int32 id_detalle_version_bouquet)
+        {
+            List<Object> liBouquet = new List<object>();
+
+            BDBouquets dbQuery = new BDBouquets();
+            DataSet ds = dbQuery.ConsultarFormula(id_detalle_version_bouquet);
+            var query = new BLL_Bouquets().BuildBouquetSelected(ds.Tables[0]);
+            liBouquet.Add(query);
+            DataTable dt = ds.Tables[1];
+            //DataRow dr = dt.NewRow();
+            //dt.Rows.Add(dr);
+            var queryDetail = new BLL_Bouquets().BuildDetailBouquetSelected(dt);
+            liBouquet.Add(queryDetail);
+            dbQuery.Cerrar();
+            return new JavaScriptSerializer().Serialize(liBouquet);
+        }
+
+        [WebMethod(EnableSession = true)]
+        [ScriptMethod(ResponseFormat = ResponseFormat.Json)]
         public String ReadSleeve(String nombre_capuchon)
         {
             BDBouquets dbQuery = new BDBouquets();
@@ -74,15 +93,83 @@ namespace Natuflora.WebService.Bouquets
             return new JavaScriptSerializer().Serialize(query);
         }
 
+        // Utiliza id_version_bouquet
         [WebMethod(EnableSession = true)]
         [ScriptMethod(ResponseFormat = ResponseFormat.Json)]
-        public String ReadSleeveBouquet(Int32 id_version_bouquet, Int32 id_detalle_version_bouquet)
+        public String ReadTablaSleeve(Int32 id_detalle_version_bouquet)
         {
             BDBouquets dbQuery = new BDBouquets();
-            DataSet ds = dbQuery.ConsultarRecetas(id_version_bouquet);
-            DataTable dt = ds.Tables[2].Clone();
-            ds.Tables[2].Select(String.Format("id_detalle_version_bouquet = {0}", id_detalle_version_bouquet)).CopyToDataTable(dt, LoadOption.Upsert);
-            var query = new BLL_Bouquets().BuildSleeve(dt);
+            DataSet ds = dbQuery.ConsultargvSleeve(id_detalle_version_bouquet);
+            var query = new BLL_Bouquets().BuildSleeve(ds.Tables[0]);
+            dbQuery.Cerrar();
+            return new JavaScriptSerializer().Serialize(query);
+        }
+
+        [WebMethod(EnableSession = true)]
+        [ScriptMethod(ResponseFormat = ResponseFormat.Json)]
+        public String InsertSleeve(Int32 id_capuchon_cultivo, Int32 id_detalle_version_bouquet)
+        {
+            BDBouquets dbQuery = new BDBouquets();
+            DataSet ds = dbQuery.InsertarSleeve(id_capuchon_cultivo, id_detalle_version_bouquet);
+            var query = new BLL_Bouquets().BuildGenericResponse(ds.Tables[0]);
+            dbQuery.Cerrar();
+            return new JavaScriptSerializer().Serialize(query);
+        }
+
+        [WebMethod(EnableSession = true)]
+        [ScriptMethod(ResponseFormat = ResponseFormat.Json)]
+        public String RemoveSleeve(Int32 id_capuchon_cultivo, Int32 id_detalle_version_bouquet)
+        {
+            BDBouquets dbQuery = new BDBouquets();
+            DataSet ds = dbQuery.EliminarSleeve(id_capuchon_cultivo, id_detalle_version_bouquet);
+            var query = new BLL_Bouquets().BuildGenericResponse("_removed");
+            dbQuery.Cerrar();
+            return new JavaScriptSerializer().Serialize(query);
+        }
+
+        [WebMethod(EnableSession = true)]
+        [ScriptMethod(ResponseFormat = ResponseFormat.Json)]
+        public String ReadSticker(String nombre_sticker)
+        {
+            BDBouquets dbQuery = new BDBouquets();
+            DataSet ds = dbQuery.ConsultarSticker();
+            DataTable dt = ds.Tables[0].Clone();
+            ds.Tables[0].Select(String.Format("nombre_sticker LIKE '%{0}%'", nombre_sticker)).Take(100).CopyToDataTable(dt, LoadOption.Upsert);
+            var query = new BLL_Bouquets().BuildSticker(dt);
+            dbQuery.Cerrar();
+            return new JavaScriptSerializer().Serialize(query);
+        }
+
+        // Utilizar id_detalle_version_bouquet
+        [WebMethod(EnableSession = true)]
+        [ScriptMethod(ResponseFormat = ResponseFormat.Json)]
+        public String ReadTablaSticker(Int32 id_detalle_version_bouquet)
+        {
+            BDBouquets dbQuery = new BDBouquets();
+            DataSet ds = dbQuery.ConsultargvSticker(id_detalle_version_bouquet);
+            var query = new BLL_Bouquets().BuildSticker(ds.Tables[0]);
+            dbQuery.Cerrar();
+            return new JavaScriptSerializer().Serialize(query);
+        }
+
+        [WebMethod(EnableSession = true)]
+        [ScriptMethod(ResponseFormat = ResponseFormat.Json)]
+        public String InsertSticker(Int32 id_sticker, Int32 id_detalle_version_bouquet)
+        {
+            BDBouquets dbQuery = new BDBouquets();
+            DataSet ds = dbQuery.InsertarSticker(id_detalle_version_bouquet, id_sticker);
+            var query = new BLL_Bouquets().BuildGenericResponse(ds.Tables[0]);
+            dbQuery.Cerrar();
+            return new JavaScriptSerializer().Serialize(query);
+        }
+
+        [WebMethod(EnableSession = true)]
+        [ScriptMethod(ResponseFormat = ResponseFormat.Json)]
+        public String RemoveSticker(Int32 id_sticker, Int32 id_detalle_version_bouquet)
+        {
+            BDBouquets dbQuery = new BDBouquets();
+            DataSet ds = dbQuery.EliminarSticker(id_sticker, id_detalle_version_bouquet);
+            var query = new BLL_Bouquets().BuildGenericResponse("_removed");
             dbQuery.Cerrar();
             return new JavaScriptSerializer().Serialize(query);
         }
@@ -154,28 +241,6 @@ namespace Natuflora.WebService.Bouquets
 
         [WebMethod(EnableSession = true)]
         [ScriptMethod(ResponseFormat = ResponseFormat.Json)]
-        public String InsertSleeve(Int32 id_capuchon_cultivo, Int32 id_detalle_version_bouquet)
-        {
-            BDBouquets dbQuery = new BDBouquets();
-            DataSet ds = dbQuery.InsertarSleeve(id_capuchon_cultivo, id_detalle_version_bouquet);
-            var query = new BLL_Bouquets().BuildGenericResponse(ds.Tables[0]);
-            dbQuery.Cerrar();
-            return new JavaScriptSerializer().Serialize(query);
-        }
-
-        [WebMethod(EnableSession = true)]
-        [ScriptMethod(ResponseFormat = ResponseFormat.Json)]
-        public String RemoveSleeve(Int32 id_capuchon_cultivo, Int32 id_detalle_version_bouquet)
-        {
-            BDBouquets dbQuery = new BDBouquets();
-            DataSet ds = dbQuery.EliminarSleeve(id_capuchon_cultivo, id_detalle_version_bouquet);
-            var query = new BLL_Bouquets().BuildGenericResponse("_removed");
-            dbQuery.Cerrar();
-            return new JavaScriptSerializer().Serialize(query);
-        }
-
-        [WebMethod(EnableSession = true)]
-        [ScriptMethod(ResponseFormat = ResponseFormat.Json)]
         public String ReadDetailFormulaOP3(Int32 id_detalle_version_bouquet)
         {
             BDBouquets dbQuery = new BDBouquets();
@@ -206,6 +271,19 @@ namespace Natuflora.WebService.Bouquets
             DataRow dr = dt.NewRow();
             dt.Rows.Add(dr);
             var query = new BLL_Bouquets().BuildBouquetRecipe(dt);
+            dbQuery.Cerrar();
+            return new JavaScriptSerializer().Serialize(query);
+        }
+
+        [WebMethod(EnableSession = true)]
+        [ScriptMethod(ResponseFormat = ResponseFormat.Json)]
+        public String ReadSearchRecipe(String texto, String items_a_buscar, String texto2, String items_a_buscar2)
+        {
+            BDBouquets dbQuery = new BDBouquets();
+            DataSet ds = dbQuery.ConsultarRecetas(texto, items_a_buscar, texto2, items_a_buscar2);
+            DataTable dt = ds.Tables[0].Clone();
+            ds.Tables[0].Select().Take(10).CopyToDataTable(dt, LoadOption.Upsert);
+            var query = new BLL_Bouquets().GenericBuilder(dt);
             dbQuery.Cerrar();
             return new JavaScriptSerializer().Serialize(query);
         }
