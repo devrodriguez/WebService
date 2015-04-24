@@ -10,6 +10,7 @@ using System.Data;
 using Natuflora.BD.Bouquets;
 using NatufloraDistribuidoraApl.Old_App_Code.Natuflora.BD.Layers.BLL;
 using NatufloraDistribuidoraApl.Old_App_Code.Natuflora.BD.Layers.BEL;
+using System.Collections;
 
 namespace Natuflora.WebService.Bouquets
 {
@@ -55,7 +56,7 @@ namespace Natuflora.WebService.Bouquets
             BDBouquets dbQuery = new BDBouquets();
             DataSet ds = dbQuery.ConsultarRecetas(id_version_bouquet);
             DataTable dt = ds.Tables[1].Clone();
-            ds.Tables[1].Select(String.Format("id_formula_bouquet = {0}", id_formula_bouquet)).Take(1).CopyToDataTable(dt, LoadOption.Upsert);
+            ds.Tables[1].Select(String.Format("id_formula_bouquet = {0}", id_formula_bouquet)).CopyToDataTable(dt, LoadOption.Upsert);
             var query = new BLL_Bouquets().BuildDetailBouquet(dt);
             dbQuery.Cerrar();
             return new JavaScriptSerializer().Serialize(query);
@@ -72,8 +73,8 @@ namespace Natuflora.WebService.Bouquets
             var query = new BLL_Bouquets().BuildBouquetSelected(ds.Tables[0]);
             liBouquet.Add(query);
             DataTable dt = ds.Tables[1];
-            //DataRow dr = dt.NewRow();
-            //dt.Rows.Add(dr);
+            DataRow dr = dt.NewRow();
+            dt.Rows.Add(dr);
             var queryDetail = new BLL_Bouquets().BuildDetailBouquetSelected(dt);
             liBouquet.Add(queryDetail);
             dbQuery.Cerrar();
@@ -107,10 +108,15 @@ namespace Natuflora.WebService.Bouquets
 
         [WebMethod(EnableSession = true)]
         [ScriptMethod(ResponseFormat = ResponseFormat.Json)]
-        public String InsertSleeve(Int32 id_capuchon_cultivo, Int32 id_detalle_version_bouquet)
+        public String InsertSleeve(String id_capuchon_cultivo, Int32 id_detalle_version_bouquet)
         {
             BDBouquets dbQuery = new BDBouquets();
-            DataSet ds = dbQuery.InsertarSleeve(id_capuchon_cultivo, id_detalle_version_bouquet);
+            DataSet ds = new DataSet();
+            foreach (var id_capuchon in id_capuchon_cultivo.Split(','))
+            {
+                ds = dbQuery.InsertarSleeve(Convert.ToInt32(id_capuchon), id_detalle_version_bouquet);    
+            }
+            
             var query = new BLL_Bouquets().BuildGenericResponse(ds.Tables[0]);
             dbQuery.Cerrar();
             return new JavaScriptSerializer().Serialize(query);
@@ -154,10 +160,15 @@ namespace Natuflora.WebService.Bouquets
 
         [WebMethod(EnableSession = true)]
         [ScriptMethod(ResponseFormat = ResponseFormat.Json)]
-        public String InsertSticker(Int32 id_sticker, Int32 id_detalle_version_bouquet)
+        public String InsertSticker(String id_sticker, Int32 id_detalle_version_bouquet)
         {
             BDBouquets dbQuery = new BDBouquets();
-            DataSet ds = dbQuery.InsertarSticker(id_detalle_version_bouquet, id_sticker);
+            DataSet ds = new DataSet();
+            foreach (var id_sticker_s in id_sticker.Split(','))
+            {
+                ds = dbQuery.InsertarSticker(id_detalle_version_bouquet, Convert.ToInt32(id_sticker_s));
+            }
+             
             var query = new BLL_Bouquets().BuildGenericResponse(ds.Tables[0]);
             dbQuery.Cerrar();
             return new JavaScriptSerializer().Serialize(query);
@@ -185,6 +196,19 @@ namespace Natuflora.WebService.Bouquets
             var query = new BLL_Bouquets().BuildFood(dt);
             dbQuery.Cerrar();
             return new JavaScriptSerializer().Serialize(query);
+        }
+
+        [WebMethod(EnableSession = true)]
+        [ScriptMethod(ResponseFormat = ResponseFormat.Json)]
+        public String InsertUPC(Int32 id_detalle_version_bouquet, List<BEL_UPC> upc)
+        {
+            BDBouquets dbQuery = new BDBouquets();
+            foreach (var item in upc)
+            {
+                DataSet ds = dbQuery.ActualizarUPC(id_detalle_version_bouquet, item.descripcion_upc, Convert.ToInt16(item.orden_upc), item.nombre_informacion_upc);
+            }
+ 
+            return "[]";
         }
 
         [WebMethod(EnableSession = true)]
@@ -271,6 +295,17 @@ namespace Natuflora.WebService.Bouquets
             DataRow dr = dt.NewRow();
             dt.Rows.Add(dr);
             var query = new BLL_Bouquets().BuildBouquetRecipe(dt);
+            dbQuery.Cerrar();
+            return new JavaScriptSerializer().Serialize(query);
+        }
+
+        [WebMethod(EnableSession = true)]
+        [ScriptMethod(ResponseFormat = ResponseFormat.Json)]
+        public String InsertBouquetRecipe(String nombre_formula, Int32 id_version_bouquet, String especificacion, String construccion, String cadena_formula, Int32 opcion_menu, Int32 unidades, Decimal precio, Int32 id_comida, Int32 id_detalle_version_bouquet, Int32 id_formato_upc)
+        {
+            BDBouquets dbQuery = new BDBouquets();
+            DataSet ds = dbQuery.InsertarFormula(nombre_formula, 50, id_version_bouquet, especificacion, construccion, cadena_formula, opcion_menu, unidades, precio, id_comida, id_detalle_version_bouquet, id_formato_upc);
+            var query = new BLL_Bouquets().GenericBuilder(ds.Tables[0]);
             dbQuery.Cerrar();
             return new JavaScriptSerializer().Serialize(query);
         }
