@@ -322,5 +322,17 @@ namespace Natuflora.WebService.Bouquets
             dbQuery.Cerrar();
             return new JavaScriptSerializer().Serialize(query);
         }
+
+        [WebMethod(EnableSession = true)]
+        [ScriptMethod(ResponseFormat = ResponseFormat.Json)]
+        public String InsertObservation(List<BEL_BouquetRecipe> liRecipes, Int32 id_formula_bouquet, Int32 id_detalle_version_bouquet)
+        {
+            BDBouquets dbQuery = new BDBouquets();
+            foreach (var recipe in liRecipes)
+            {
+                DataSet ds = dbQuery.InsertarObservacion(recipe.id_variedad_flor_cultivo, recipe.id_grado_flor_cultivo, recipe.cantidad_tallos, id_formula_bouquet, recipe.observacion, recipe.id_variedad_flor_cultivo_sustitucion, recipe.id_grado_flor_cultivo_sustitucion, id_detalle_version_bouquet);    
+            }
+            return "[]";
+        }
     }
 }
