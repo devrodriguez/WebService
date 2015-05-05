@@ -56,7 +56,7 @@ namespace Natuflora.WebService.Bouquets
             BDBouquets dbQuery = new BDBouquets();
             DataSet ds = dbQuery.ConsultarRecetas(id_version_bouquet);
             DataTable dt = ds.Tables[1].Clone();
-            ds.Tables[1].Select(String.Format("id_formula_bouquet = {0}", id_formula_bouquet)).CopyToDataTable(dt, LoadOption.Upsert);
+            ds.Tables[1].Select(String.Format("id_formula_bouquet = {0}", id_formula_bouquet)).Take(1).CopyToDataTable(dt, LoadOption.Upsert);
             var query = new BLL_Bouquets().BuildDetailBouquet(dt);
             dbQuery.Cerrar();
             return new JavaScriptSerializer().Serialize(query);
@@ -287,16 +287,27 @@ namespace Natuflora.WebService.Bouquets
 
         [WebMethod(EnableSession = true)]
         [ScriptMethod(ResponseFormat = ResponseFormat.Json)]
-        public String ReadBouquetRecipe(Int32 id_detalle_version_bouquet)
+        public String ReadBouquetRecipe(Int32 id_detalle_version_bouquet, Boolean getModel, Boolean emptyRow)
         {
-            BDBouquets dbQuery = new BDBouquets();
-            DataSet ds = dbQuery.ConsultarFormula(id_detalle_version_bouquet);
-            DataTable dt = ds.Tables[1];
-            DataRow dr = dt.NewRow();
-            dt.Rows.Add(dr);
-            var query = new BLL_Bouquets().BuildBouquetRecipe(dt);
-            dbQuery.Cerrar();
-            return new JavaScriptSerializer().Serialize(query);
+            if (getModel)
+            {
+                return new JavaScriptSerializer().Serialize(new BEL_BouquetRecipe());
+            }
+            else
+            {
+                BDBouquets dbQuery = new BDBouquets();
+                DataSet ds = dbQuery.ConsultarFormula(id_detalle_version_bouquet);
+                DataTable dt = ds.Tables[1];
+                if (emptyRow)
+                {
+                    DataRow dr = dt.NewRow();
+                    dt.Rows.Add(dr);
+                }
+                var query = new BLL_Bouquets().BuildBouquetRecipe(dt);
+                dbQuery.Cerrar();
+                return new JavaScriptSerializer().Serialize(query);
+            }
+            
         }
 
         [WebMethod(EnableSession = true)]
