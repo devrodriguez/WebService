@@ -345,5 +345,18 @@ namespace Natuflora.WebService.Bouquets
             }
             return "[]";
         }
+
+        [WebMethod(EnableSession = true)]
+        [ScriptMethod(ResponseFormat = ResponseFormat.Json)]
+        public String ReadSearchBouquet(String texto, String columnas)
+        {
+            BDBouquets dbQuery = new BDBouquets();
+            DataSet ds = dbQuery.ConsultarTodoFlor();
+            DataTable dt = ds.Tables[0].Clone();
+            ds.Tables[0].Select(String.Format("{0} LIKE '%{1}%'", columnas, texto)).Take(100).CopyToDataTable(dt, LoadOption.Upsert);
+            var query = new BLL_Bouquets().BuildSearchBouquet(dt);
+            dbQuery.Cerrar();
+            return new JavaScriptSerializer().Serialize(query);
+        }
     }
 }
