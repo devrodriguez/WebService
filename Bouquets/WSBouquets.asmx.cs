@@ -4,6 +4,7 @@ using System.Linq;
 using System.Web;
 using System.Web.Script.Services;
 using System.Web.Services;
+using System.Web.SessionState;
 using System.Web.Script.Serialization;
 using System.Data;
 
@@ -28,14 +29,27 @@ namespace Natuflora.WebService.Bouquets
         [ScriptMethod(ResponseFormat = ResponseFormat.Json)]
         public String ConsultarDetallePO(Int32 idDetallePO)
         {
-            HttpContext.Current.Session["SessionPO"] = "2425";
-            HttpContext.Current.Session["id_usuario"] = "44";
-
+            DataSet ds = new DataSet();
+            String response = String.Empty;
+            //HttpContext.Current.Session["SessionPO"] = po;
+            //HttpContext.Current.Session["id_usuario"] = usuario;
+            
             BDBouquets dbQuery = new BDBouquets();
-            DataSet ds = dbQuery.DetallePO(Int32.Parse(HttpContext.Current.Session["SessionPO"].ToString()), Int32.Parse(HttpContext.Current.Session["id_usuario"].ToString()));
-            var query = new BLL_Bouquets().BuildRecipePO(ds.Tables[0]).Where(bouquet => bouquet.id_detalle_po == idDetallePO);
+            //if (String.IsNullOrEmpty(po))
+            //{
+            ds = dbQuery.ConsultarBouquet(idDetallePO);
+            var query = new BLL_Bouquets().BuildRecipePO(ds.Tables[0]);
+            response = new JavaScriptSerializer().Serialize(query);
+            //}
+            ////else
+            ////{
+            //    ds = dbQuery.DetallePO(Int32.Parse(HttpContext.Current.Session["SessionPO"].ToString()), Int32.Parse(HttpContext.Current.Session["id_usuario"].ToString()));
+            //    var query = new BLL_Bouquets().BuildRecipePO(ds.Tables[0]).Where(bouquet => bouquet.id_detalle_po == idDetallePO);
+            //    response = new JavaScriptSerializer().Serialize(query);
+            ////}
+            
             dbQuery.Cerrar();
-            return new JavaScriptSerializer().Serialize(query);
+            return response;
         }
 
         [WebMethod(EnableSession = true)]
@@ -328,7 +342,7 @@ namespace Natuflora.WebService.Bouquets
             BDBouquets dbQuery = new BDBouquets();
             DataSet ds = dbQuery.ConsultarRecetas(texto, items_a_buscar, texto2, items_a_buscar2);
             DataTable dt = ds.Tables[0].Clone();
-            ds.Tables[0].Select().Take(10).CopyToDataTable(dt, LoadOption.Upsert);
+            ds.Tables[0].Select().Take(100).CopyToDataTable(dt, LoadOption.Upsert);
             var query = new BLL_Bouquets().GenericBuilder(dt);
             dbQuery.Cerrar();
             return new JavaScriptSerializer().Serialize(query);
